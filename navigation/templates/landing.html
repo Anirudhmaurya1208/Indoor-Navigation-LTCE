@@ -1,0 +1,113 @@
+{% include "base.html" %}
+
+{% block main %}
+
+<!-- ======= Hero Section ======= -->
+<section id="hero" class="d-flex flex-column justify-content-center align-items-center mt-0">
+    <div class="container text-center text-md-left" data-aos="fade-up">
+      <h1><span>LTCE</span> Indoor Navigation</h1>
+      <h2>Explore Your Campus: Simplifying Indoor Navigation at <span style="font-weight: bolder;">Lokmanya Tilak College of Enginnering</span></h2>
+      <a href="{% url 'detail' %}" class="btn-get-started scrollto">Get Started</a>
+    </div>
+</section><!-- End Hero -->
+
+<div id="main">
+
+    <!-- ======= What We Do Section ======= -->
+    <section id="what-we-do" class="what-we-do">
+      <div class="container">
+
+        <div class="section-title">
+          <h2>Features</h2>
+          <p>Seamless Navigation Experience with Innovative Features</p>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+            <div class="icon-box">
+              <div class="icon"><i class="bi bi-shop text-dark" style="font-size: 50px;"></i></div>
+              <h4>Search Classrooms/Labs</h4>
+              <p>Effortlessly locate classrooms and labs across campus with our intuitive search feature</p>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-md-0">
+            <div class="icon-box">
+              <div class="icon"><i class="bi bi-person-bounding-box text-dark" style="font-size: 50px;"></i></i></div>
+              <h4>Search Teachers/Staff</h4>
+              <p>Locate and connect with faculty and staff members across campus</p>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-lg-0">
+            <div class="icon-box">
+              <div class="icon"><i class="bi bi-qr-code-scan text-dark" style="font-size: 50px;"></i></i></div>
+              <h4>Scan QR code</h4>
+              <p>Simply scan QR codes to track your location and facilitate seamless navigation</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section><!-- End What We Do Section -->
+
+    <!-- ======= About Section ======= -->
+    <section id="about" class="about mb-5">
+      <div class="container">
+
+        <div class="row">
+          <div class="col-lg-6">
+            <img src="/static/assets/img/about.jpg" class="img-fluid" alt="about">
+          </div>
+          <div class="col-lg-6 pt-4 pt-lg-0 section-title text-start">
+            <h2 class="text-center">About Us</h2>
+            <p>
+              We are final year Computer Engineering students, passionate about technology and eager to apply our knowledge to practical solutions.
+            </p><br>
+            <ul>
+              <li><i class="bi bi-check2-all"></i> Committed to real-world application.</li>
+              <li><i class="bi bi-check2-all"></i> Embracing challenges and fostering creativity in problem-solving.</li>
+            </ul>
+            <div class="row icon-boxes justify-content-center text-center">
+              <div class="col-md-6">
+                <i class="bi bi-code-slash"></i>
+                <h4>Passion for Technology</h4>
+                <p>We love exploring the latest in tech and how it can make a difference in people's lives.</p>
+              </div>
+              <div class="col-md-6 mt-4 mt-md-0">
+                <i class="bi bi-lightbulb"></i>
+                <h4>Innovative Thinkers</h4>
+                <p>We approach challenges with creativity and determination, striving for practical and effective solutions.</p>
+              </div>
+              <div class="col-md-6 mt-4 mt-md-0">
+                <i class="bi bi-pencil"></i>
+                <h4>Our Work</h4>
+                <p>Explore our portfolio to see the projects we've worked on : <a href="https://upthurst.pythonanywhere.com" target="_blank">PORTFOLIO</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End About Section -->
+
+</div><!-- End #main -->
+
+<!-- ======= Footer ======= -->
+<footer id="footer mt-5" style="box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.1);">
+
+    <div class="px-5 py-3">
+
+      <div class="me-md-auto text-center text-md-start">
+        <div class="copyright">
+          &copy; Copyright <strong><span>LTCE Indoor Navigation</span></strong>. All Rights Reserved
+        </div>
+        <div class="credits">
+          Designed by <a href="#">LTCE Students</a>
+        </div>
+      </div>
+    </div>
+</footer><!-- End Footer -->
+
+{% endblock %}

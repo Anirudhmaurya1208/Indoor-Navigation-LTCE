@@ -1,0 +1,1006 @@
+{% include "floor.html" %}
+
+{% block floor %}
+
+    {{floor_map|safe }}
+
+    <!-- ======= Footer ======= -->
+    <footer id="footer mt-5" style="box-shadow: 0px 2px 15px rgba(0, 0, 0, 0.1);">
+
+        <div class="px-5 py-3">
+
+        <div class="me-md-auto text-center text-md-start">
+            <div class="copyright">
+            &copy; Copyright <strong><span>LTCE Indoor Navigation</span></strong>. All Rights Reserved
+            </div>
+            <div class="credits">
+            Designed by <a href="#">LTCE Students</a>
+            </div>
+        </div>
+        </div>
+    </footer><!-- End Footer -->
+{% endblock  %}
+
+{% block script %}    
+    <script>
+        document.getElementById("qrbtn").addEventListener("click", function() {
+            startCamera();
+        });
+
+        // script to handle current_floor param
+        if (document.getElementById('otherButton')) {
+            document.getElementById('otherButton').addEventListener('click', function() {
+            // Get the current_floor value from the hidden input
+                var currentFloorInput = document.getElementById('current_floor');
+                var currentFloorValue = parseInt({{request.GET.current_floor}}, 10) || 0;
+                var currentBuildingInput = document.getElementById('currentBuilding');
+                var currentBuilding = parseInt({{request.GET.currentBuilding}}, 10) || 0;
+                var fromFloorInput = document.getElementById('from-floor');
+                var fromFloorValue = parseInt({{request.GET.from_floor}}, 10) || 0;
+        
+                if (currentFloorValue == 0) {
+                    fromFloorValue = 0;
+                    if (currentBuilding === 2) {
+                        currentFloorValue = 8;
+                        currentBuilding = 3;
+                    }
+                    else{
+                        currentFloorValue++;
+                        currentBuilding = 2;
+                    }
+                }
+                else{
+                    if (currentFloorValue == 8){
+                        currentFloorValue = 0;
+                    }
+                    else{
+                        currentFloorValue--;
+                    }
+                }
+        
+                // Update the hidden input with the new current_floor value
+                currentFloorInput.value = currentFloorValue;
+                currentBuildingInput.value = currentBuilding;
+                fromFloorInput.value = fromFloorValue;
+                console.log(currentFloorInput.value);
+        
+                // Submit the form
+                this.form.submit();
+            });
+        }
+        
+        if (document.getElementById('nextButton')) {
+            document.getElementById('nextButton').addEventListener('click', function() {
+                // Get the current_floor value from the hidden input
+                var currentFloorInput = document.getElementById('current_floor');
+                var currentFloorValue = parseInt({{request.GET.current_floor}}, 10) || 0;
+                var toBuilding = parseInt({{request.GET.toBuilding}}, 10) || 0;
+        
+                // Increase the current_floor value by one
+                if (currentFloorValue == 0) {
+                    if (toBuilding == 2) {
+                        currentFloorValue++;
+                    }
+                    else{
+                        currentFloorValue = 8
+                    }
+                }
+                else{
+                    currentFloorValue++;
+                }
+        
+                // Update the hidden input with the new current_floor value
+                currentFloorInput.value = currentFloorValue;
+                console.log(currentFloorInput.value);
+        
+                // Submit the form
+                this.form.submit();
+            });
+        }
+        
+        if (document.getElementById('preButton')) {
+            document.getElementById('preButton').addEventListener('click', function() {
+                // Get the current_floor value from the hidden input
+                var currentFloorInput = document.getElementById('current_floor');
+                var currentFloorValue = parseInt({{request.GET.current_floor}}, 10) || 0;
+        
+                // Increase the current_floor value by one
+                if (currentFloorValue == 8) {
+                    currentFloorValue = 0;
+                }
+                else{
+                    currentFloorValue--;
+                }
+        
+                // Update the hidden input with the new current_floor value
+                currentFloorInput.value = currentFloorValue;
+                console.log(currentFloorInput.value);
+        
+                // Submit the form
+                this.form.submit();
+            });
+        }
+        
+        if (document.getElementById('lastButton')){
+            document.getElementById('lastButton').addEventListener('click', function() {
+                // Get the current_floor value from the hidden input
+                var currentFloorInput = document.getElementById('current_floor');
+                var currentFloorValue = parseInt({{request.GET.current_floor}}, 10) || 0;
+                var currentBuildingInput = document.getElementById('currentBuilding');
+                var currentBuilding = parseInt({{request.GET.currentBuilding}}, 10) || 0;
+                var fromFloorInput = document.getElementById('from-floor');
+                var fromFloorValue = parseInt({{request.GET.from_floor}}, 10) || 0;
+        
+                // Increase the current_floor value by one
+                var temp = {{request.GET.to_floor}};
+                currentFloorValue = parseInt(temp,10) || 0;
+    
+
+                // Update the hidden input with the new current_floor value
+    
+                currentFloorInput.value = currentFloorValue;
+                
+                if ({{request.GET.currentBuilding}} != {{request.GET.toBuilding}}){
+                    fromFloorValue = 0;
+                    fromFloorInput.value = fromFloorValue;
+                }
+                if ({{request.GET.to_floor}} != 0){
+                    var tempBuilding = {{request.GET.toBuilding}};           
+                    currentBuilding = parseInt(tempBuilding,10) || 0;
+                    currentBuildingInput.value = currentBuilding;
+                }
+                
+                console.log(currentFloorInput.value);
+        
+                // Submit the form
+                this.form.submit();
+            });
+        }
+        
+
+
+        // Function to find the shortest path using Dijkstra's algorithm
+        function findShortestPath(graph, startRoom, endRoom) {
+            const visited = new Set();
+            const distances = {};
+            const previous = {};
+            const queue = [];
+
+            // Initialization
+            for (const room in graph) {
+                distances[room] = Infinity;
+                previous[room] = null;
+            }
+
+            distances[startRoom] = 0;
+            queue.push({ room: startRoom, distance: 0 });
+
+            // Dijkstra's algorithm
+            while (queue.length > 0) {
+                queue.sort((a, b) => a.distance - b.distance);
+                const { room: currentRoom, distance: currentDistance } = queue.shift();
+
+                if (visited.has(currentRoom)) continue;
+
+                visited.add(currentRoom);
+
+                for (const neighbor of graph[currentRoom]) {
+                    const newDistance = currentDistance + 1;
+
+                    if (newDistance < distances[neighbor]) {
+                        distances[neighbor] = newDistance;
+                        previous[neighbor] = currentRoom;
+                        queue.push({ room: neighbor, distance: newDistance });
+                    }
+                }
+            }
+
+            // Reconstruct the path
+            const path = [];
+            let current = endRoom;
+
+            while (current !== null) {
+                path.unshift(current);
+                current = previous[current];
+            }
+
+            return path;
+        }
+        let graph={};
+        let currentFloorNo = {{currentFloor.floor_no}}
+        let currentBuilding = "{{currentFloor.building}}"
+        if ((currentFloorNo == 4 && currentBuilding == "C") || (currentFloorNo == 5 && currentBuilding == "C")) {
+            graph = {
+                proom1: ['pc1'],
+                proom2: ['pc2'],
+                proom3: ['pc3'],
+                proom6: ['pc9'],
+                proom7: ['pc10'],
+                proom8: ['pc11'],
+                proom9: ['pc1'],
+                proom10: ['pc2'],
+                proom11: ['pc4'],
+                proom12: ['pc8'],
+                proom13: ['pc9'],
+                proom14: ['pc10'],
+                proom15: ['pc11','proom16'],
+                proom16: ['proom15'],
+                pc1: ['proom1','proom9','pc2'],
+                pc2: ['proom2','proom10','pc1','pc3'],
+                pc3: ['proom3','pc2','pc4'],
+                pc4: ['pc3','proom11','pc5'],
+                pc5: ['pc4','pc6','pc13'],
+                pc6: ['pc5','pc7','pc17'],
+                pc7: ['pc6','pc8','pc20'],
+                pc8: ['pc7','pc9','proom12'],
+                pc9: ['proom6','proom13','pc8','pc10'],
+                pc10: ['proom7','proom14','pc9','pc11'],
+                pc11: ['proom8','proom15','pc10'],
+                pc13: ['pc5','pc14','pc15'],
+                pc14: ['pc13','pc16','pc17'],
+                pc15: ['pc13'],
+                pc16: ['pc14'],
+                pc17: ['pc14','pc18','pc6'],
+                pc18: ['pc17','pc19','pc20'],
+                pc19: ['pc18'],
+                pc20: ['pc21','pc7','pc18'],
+                pc21: ['pc20'],
+                // ... add more rooms and their neighbors ...
+            };
+        }
+        else if ((currentFloorNo == 2 && currentBuilding == "C") || (currentFloorNo == 3 && currentBuilding == "C")) {
+            graph = {
+                proom1: ['pc1'],
+                proom2: ['pc2'],
+                proom3: ['pc3'],
+                proom6: ['pc9'],
+                proom7: ['pc10'],
+                proom8: ['pc11'],
+                proom9: ['pc1'],
+                proom10: ['pc2'],
+                proom11: ['pc4'],
+                proom12: ['pc8'],
+                proom14: ['pc10'],
+                proom15: ['pc11','proom16'],
+                proom16: ['proom15'],
+                pc1: ['proom1','proom9','pc2'],
+                pc2: ['proom2','proom10','pc1','pc3'],
+                pc3: ['proom3','pc2','pc4'],
+                pc4: ['pc3','proom11','pc5'],
+                pc5: ['pc4','pc6','pc13'],
+                pc6: ['pc5','pc7','pc17'],
+                pc7: ['pc6','pc8','pc20'],
+                pc8: ['pc7','pc9','proom12'],
+                pc9: ['proom6','pc8','pc10'],
+                pc10: ['proom7','proom14','pc9','pc11'],
+                pc11: ['proom8','proom15','pc10'],
+                pc13: ['pc5','pc14','pc15'],
+                pc14: ['pc13','pc16','pc17'],
+                pc15: ['pc13'],
+                pc16: ['pc14'],
+                pc17: ['pc14','pc18','pc6'],
+                pc18: ['pc17','pc19','pc20'],
+                pc19: ['pc18'],
+                pc20: ['pc21','pc7','pc18'],
+                pc21: ['pc20'],
+                // ... add more rooms and their neighbors ...
+            };
+        }
+        else if (currentFloorNo == 1 && currentBuilding == "C"){
+            graph = {
+                proom1: ['pc1'],
+                proom2: ['pc2'],
+                proom3: ['pc3'],
+                proom6: ['pc9'],
+                proom7: ['pc10'],
+                proom8: ['pc11'],
+                proom9: ['pc1'],
+                proom10: ['pc2'],
+                proom11: ['pc4'],
+                proom12: ['pc8'],
+                proom13: ['pc9'],
+                proom14: ['pc10'],
+                proom15: ['pc11','proom16'],
+                proom16: ['proom15'],
+                pc1: ['proom1','proom9','pc2'],
+                pc2: ['proom2','proom10','pc1','pc3'],
+                pc3: ['proom3','pc2','pc4'],
+                pc4: ['pc3','proom11','pc5'],
+                pc5: ['pc4','pc6','pc13'],
+                pc6: ['pc5','pc7','pc16','pc17'],
+                pc7: ['pc6','pc8','pc20'],
+                pc8: ['pc7','pc9','proom12'],
+                pc9: ['proom6','proom13','pc8','pc10'],
+                pc10: ['proom7','proom14','pc9','pc11'],
+                pc11: ['proom8','proom15','pc10'],
+                pc13: ['pc5','pc14','pc15'],
+                pc14: ['pc13','pc17'],
+                pc15: ['pc13'],
+                pc16: ['pc6'],
+                pc17: ['pc14','pc18','pc6'],
+                pc18: ['pc17','pc19','pc20'],
+                pc19: ['pc18'],
+                pc20: ['pc21','pc7','pc18'],
+                pc21: ['pc20'],
+                // ... add more rooms and their neighbors ...
+            };
+        }
+        else if(currentFloorNo == 0){
+            graph = {
+                proom1: ['pc6'],
+                proom2: ['pc3'],
+                proom3: ['pc11'],
+                proom4: ['pc12'],
+                proom5: ['pc10'],
+                proom6: ['pc18'],
+                proom7: ['pc19'],
+                proom8: ['pc23'],
+                proom9: ['pc24'],
+                proom10: ['pc27'],
+                proom11: ['pc28'],
+                proom12: ['pc29'],
+                proom13: ['pc30'],
+                proom14: ['pc31'],
+                proom15: ['pc32'],
+                pc1: ['pc2','pc6','pc16'],
+                pc2: ['pc1','pc015','pc3'],
+                pc3: ['pc2','proom2','pc5'],
+                pc4: ['pc39','pc5'],
+                pc5: ['pc3','pc4'],
+                pc6: ['pc1','pc7','proom1'],
+                pc7: ['pc6','pc8','pc11'],
+                pc8: ['pc7','pc9'],
+                pc9: ['pc10','pc8'],
+                pc10: ['proom5','pc14','pc9'],
+                pc11: ['pc13','pc7','proom3'],
+                pc12: ['pc13','proom4'],
+                pc13: ['pc36','pc11','pc12'],
+                pc14: ['pc17','pc25','pc10'],
+                pc15: ['pc015'],
+                pc015: ['pc15','pc2'],
+                pc16: ['pc1'],
+                pc17: ['pc14','pc26','pc18'],
+                pc18: ['pc17','pc19','proom6'],
+                pc19: ['pc21','pc18','proom7'],
+                pc20: ['pc22'],
+                pc21: ['pc22','pc19'],
+                pc22: ['pc20','pc21','pc23'],
+                pc23: ['pc24','pc22','proom8'],
+                pc24: ['pc23','pc27','proom9'],
+                pc25: ['pc14'],
+                pc26: ['pc17'],
+                pc27: ['pc28','pc24','proom10'],
+                pc28: ['pc29','pc27','proom11'],
+                pc29: ['pc30','pc28','proom12'],
+                pc30: ['pc31','pc29','proom13'],
+                pc31: ['pc32','pc30','proom14'],
+                pc32: ['pc33','pc31','proom15'],
+                pc33: ['pc32','pc35'],
+                pc34: ['pc35'],
+                pc35: ['pc36','pc34','pc33'],
+                pc36: ['pc37','pc35','pc13'],
+                pc37: ['pc38','pc36','pc40'],
+                pc38: ['pc39','pc41','pc37'],
+                pc39: ['pc4','pc38'],
+                pc40: ['pc37'],
+                pc41: ['pc38','pc43'],
+                pc42: ['pc43'],
+                pc43: ['pc42','pc41'],
+            };
+        }
+        else if(currentFloorNo == 8 && currentBuilding == "A"){
+            graph = {
+                proom1: ['pc1'],
+                proom2: ['pc1'],
+                proom3: ['pc5'],
+                proom4: ['pc6'],
+                proom5: ['pc7'],
+                proom6: ['pc8'],
+                proom7: ['pc9'],
+                proom8: ['pc10'],
+                proom9: ['pc11'],
+                proom10: ['pc2'],
+                proom11: ['pc12'],
+                proom12: ['pc13'],
+                proom13: ['pc14'],
+                proom14: ['pc15'],
+                proom15: ['pc20'],
+                proom16: ['pc7'],
+                proom17: ['pc8'],
+                proom18: ['pc9'],
+                proom19: ['pc10'],
+                proom20: ['pc4'],
+                pc1: ['proom1','proom2','pc3'],
+                pc2: ['room10','pc3'],
+                pc3: ['pc2','pc1','pc4'],
+                pc4: ['pc3','pc12','proom20'],
+                pc5: ['pc12','pc13','proom3'],
+                pc6: ['pc13','pc14','proom4'],
+                pc7: ['pc20','pc8','proom5','proom16'],
+                pc8: ['pc7','pc9','proom6','proom17'],
+                pc9: ['pc8','pc10','proom7','proom18'],
+                pc10: ['pc9','pc11','proom8','proom19'],
+                pc11: ['pc9','proom9'],
+                pc12: ['pc4','pc5','proom11'],
+                pc13: ['pc5','pc6','proom12'],
+                pc14: ['pc6','pc15','proom13'],
+                pc15: ['pc14','pc17','proom14'],
+                pc16: ['pc17','pc25'],
+                pc17: ['pc15','pc16','pc20','pc26'],
+                pc20: ['pc17','pc7','proom15'],
+                pc26: ['pc17'],
+                pc25: ['pc16']
+            };
+        }
+        else if(currentFloorNo == 9 && currentBuilding == "A"){
+            graph = {
+                proom1: ['pc1'],
+                proom2: ['pc1'],
+                proom3: ['pc5'],
+                proom4: ['pc6'],
+                proom5: ['pc7'],
+                proom6: ['pc8'],
+                proom7: ['pc9'],
+                proom8: ['pc10'],
+                proom9: ['pc11'],
+                proom10: ['pc2'],
+                proom11: ['pc12'],
+                proom12: ['pc13'],
+                proom13: ['pc14'],
+                proom14: ['pc15'],
+                proom15: ['pc20'],
+                proom16: ['pc7'],
+                proom17: ['pc8'],
+                proom18: ['pc9'],
+                proom19: ['pc10'],
+                proom20: ['pc4'],
+                pc1: ['proom1','proom2','pc3'],
+                pc2: ['room10','pc3'],
+                pc3: ['pc2','pc1','pc4'],
+                pc4: ['pc3','pc12','proom20'],
+                pc5: ['pc12','pc13','proom3'],
+                pc6: ['pc13','pc14','proom4'],
+                pc7: ['pc20','pc8','proom5','proom16'],
+                pc8: ['pc7','pc9','proom6','proom17'],
+                pc9: ['pc8','pc10','proom7','proom18'],
+                pc10: ['pc9','pc11','proom8','proom19'],
+                pc11: ['pc9','proom9'],
+                pc12: ['pc4','pc5','proom11'],
+                pc13: ['pc5','pc6','proom12'],
+                pc14: ['pc6','pc15','proom13'],
+                pc15: ['pc14','pc17','proom14'],
+                pc16: ['pc17','pc25','pc18'],
+                pc17: ['pc15','pc16','pc19'],
+                pc18: ['pc19','pc26','pc16'],
+                pc19: ['pc17','pc20','pc18'],
+                pc20: ['pc19','pc7','proom15'],
+                pc26: ['pc18'],
+                pc25: ['pc16']
+            };
+        }
+        else if(currentFloorNo == 10 && currentBuilding == "A"){
+            graph = {
+                proom1: ['pc1'],
+                proom2: ['pc1'],
+                proom3: ['pc2'],
+                proom4: ['pc3'],
+                proom5: ['pc3'],
+                proom6: ['pc4'],
+                proom7: ['pc4'],
+                proom8: ['pc5'],
+                proom9: ['pc5'],
+                proom10: ['pc6'],
+                proom11: ['pc10'],
+                proom12: ['pc10'],
+                proom13: ['pc11'],
+                proom14: ['pc11'],
+                proom15: ['pc12'],
+                proom16: ['pc12'],
+                proom17: ['pc13'],
+                proom18: ['pc13'],
+                proom19: ['pc14'],
+                proom20: ['pc15'],
+                proom21: ['pc19'],
+                pc1: ['proom1','proom2','pc2'],
+                pc2: ['pc1','proom3','pc3'],
+                pc3: ['proom4','proom5','pc4','pc2'],
+                pc4: ['pc3','pc5','proom6','proom7'],
+                pc5: ['proom8','proom9','pc4','pc19'],
+                pc6: ['proom10','pc18'],
+                pc7: ['pc8','pc9','pc25'],
+                pc8: ['pc7','pc17','pc18'],
+                pc9: ['pc15','pc7','pc16'],
+                pc10: ['proom11','proom12','pc11','pc15'],
+                pc11: ['proom13','proom14','pc10','pc12'],
+                pc12: ['proom15','proom16','pc11','pc13'],
+                pc13: ['proom17','proom18','pc12','pc14'],
+                pc14: ['proom19','pc13'],
+                pc15: ['proom20','pc9','pc10'],
+                pc16: ['pc9','pc17','pc19'],
+                pc17: ['pc8','pc16'],
+                pc18: ['pc8','pc6','pc26'],
+                pc19: ['proom21','pc5','pc16'],
+                pc25: ['pc7'],
+                pc26: ['pc18']
+            };
+        }
+        else if(currentFloorNo == 11 && currentBuilding == "A"){
+            graph = {
+                proom1: ['pc1'],
+                proom2: ['pc1'],
+                proom3: ['pc4'],
+                proom4: ['pc6'],
+                proom5: ['pc8'],
+                proom6: ['pc11'],
+                proom7: ['pc13'],
+                proom8: ['pc15'],
+                proom9: ['pc16'],
+                proom10: ['pc15'],
+                proom11: ['pc14'],
+                proom12: ['pc12'],
+                proom13: ['pc11'],
+                proom14: ['pc7'],
+                proom15: ['pc4'],
+                proom16: ['pc3'],
+                proom17: ['pc10'],
+                proom18: ['pc9'],
+                proom19: ['pc5'],
+                pc1: ['proom1','proom2','pc2'],
+                pc2: ['pc1','pc3','pc4'],
+                pc3: ['pc2','proom16'],
+                pc4: ['pc2','proom3','proom15','pc5'],
+                pc5: ['pc4','proom19','pc6'],
+                pc6: ['pc5','proom4','pc7'],
+                pc7: ['proom14','pc6','pc8'],
+                pc8: ['pc7','pc9','proom5'],
+                pc9: ['pc8','pc17','proom18'],
+                pc10: ['pc17','proom17','pc11'],
+                pc11: ['proom6','proom13','pc10','pc12'],
+                pc12: ['proom12','pc11','pc13'],
+                pc13: ['proom7','pc14','pc12'],
+                pc14: ['pc13','proom11','pc15'],
+                pc15: ['proom8','proom10','pc16'],
+                pc16: ['pc15','proom9'],
+                pc17: ['pc9','pc19','pc10'],
+                pc18: ['pc19','pc26'],
+                pc19: ['pc17','pc25','pc18'],
+                pc25: ['pc19'],
+                pc26: ['pc18']
+            };
+        }
+        else if(currentFloorNo == 12 && currentBuilding == "A"){
+            graph = {
+                proom1: ['pc1','pc10'],
+                proom2: ['pc1'],
+                proom3: ['pc2'],
+                proom4: ['pc4'],
+                proom5: ['pc5'],
+                proom6: ['pc6'],
+                proom7: ['pc8'],
+                proom8: ['pc9'],
+                proom9: ['pc10'],
+                proom10: ['pc7'],
+                pc1: ['proom1','pc2','proom2'],
+                pc2: ['proom3','pc1','pc3'],
+                pc3: ['pc2','pc4','pc12'],
+                pc4: ['proom4','pc3','pc5'],
+                pc5: ['proom5','pc4','pc6'],
+                pc6: ['proom6','pc5','pc7'],
+                pc7: ['proom10','pc6','pc8'],
+                pc8: ['proom7','pc7','pc9'],
+                pc9: ['proom8','pc8'],
+                pc10: ['proom1','proom9'],
+                pc11: ['pc12','pc26'],
+                pc12: ['pc3','pc25','pc11'],
+                pc25: ['pc12'],
+                pc26: ['pc11']
+            };
+        }
+        else{
+            graph = {
+                proom1: ['pc1'],
+                proom2: ['pc2'],
+                proom3: ['pc3'],
+                proom6: ['pc9'],
+                proom7: ['pc10'],
+                proom8: ['pc11'],
+                proom9: ['pc1'],
+                proom10: ['pc2'],
+                proom11: ['pc4'],
+                proom12: ['pc8'],
+                proom13: ['pc9'],
+                proom14: ['pc10'],
+                proom15: ['pc11','proom16'],
+                proom16: ['proom15'],
+                pc1: ['proom1','proom9','pc2'],
+                pc2: ['proom2','proom10','pc1','pc3'],
+                pc3: ['proom3','pc2','pc4'],
+                pc4: ['pc3','proom11','pc5'],
+                pc5: ['pc4','pc6','pc13'],
+                pc6: ['pc5','pc7','pc17'],
+                pc7: ['pc6','pc8','pc20'],
+                pc8: ['pc7','pc9','proom12'],
+                pc9: ['proom6','proom13','pc8','pc10'],
+                pc10: ['proom7','proom14','pc9','pc11'],
+                pc11: ['proom8','proom15','pc10'],
+                pc13: ['pc5','pc14','pc15'],
+                pc14: ['pc13','pc16','pc17'],
+                pc15: ['pc13'],
+                pc16: ['pc14'],
+                pc17: ['pc14','pc18','pc6'],
+                pc18: ['pc17','pc19','pc20'],
+                pc19: ['pc18'],
+                pc20: ['pc21','pc7','pc18'],
+                pc21: ['pc20'],
+                // ... add more rooms and their neighbors ...
+            };
+        }
+        
+
+
+
+        const startRoom = "p" + "{{i}}";
+        const endRoom = "p" + "{{j}}";
+
+        function showAlert(str1,str2,wait){
+            // Create a new div element with Bootstrap alert classes
+            var alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-warning alert-dismissible fade show mx-1';
+            alertDiv.setAttribute('role', 'alert');
+            
+            // Set the content for the alert
+            alertDiv.innerHTML = `<strong>${str1}</strong>${str2}`;
+    
+            // Create the close button
+            var closeButton = document.createElement('button');
+            closeButton.type = 'button';
+            closeButton.className = 'btn-close';
+            closeButton.setAttribute('data-bs-dismiss', 'alert');
+            closeButton.setAttribute('aria-label', 'Close');
+    
+            // Append the close button to the alert div
+            alertDiv.appendChild(closeButton);
+    
+            // Insert the alert div at the top of the body
+            document.body.insertBefore(alertDiv, document.body.firstChild);
+
+            setTimeout(function () {
+                alertDiv.remove();
+            }, wait);
+        }
+
+        if (startRoom == endRoom) {
+            showAlert("Congrats! ", " You have reached the destination.",100000)
+        }
+        
+        highlightLocation(startRoom,0.8,2,'red')
+        highlightLocationDes(endRoom,0.8,2,'green')
+
+
+        const shortestPath = findShortestPath(graph, startRoom, endRoom);
+        console.log(shortestPath); // shortest path array
+
+        // Save the path first
+        const linesToDraw = [];
+        for (let i = 0; i < shortestPath.length - 1; i++) {
+            const currentRoom = document.getElementById(shortestPath[i]);
+            const nextRoom = document.getElementById(shortestPath[i + 1]);
+
+            linesToDraw.push({
+                x1: parseFloat(currentRoom.getAttribute('cx')),
+                y1: parseFloat(currentRoom.getAttribute('cy')),
+                x2: parseFloat(nextRoom.getAttribute('cx')),
+                y2: parseFloat(nextRoom.getAttribute('cy')),
+            });
+        }
+        console.log(linesToDraw) // all points of the path
+
+        function getDirectionAndSteps(path) {
+            const dx = path.x2 - path.x1;
+            const dy = path.y2 - path.y1;
+        
+            const distance = Math.sqrt(dx ** 2 + dy ** 2);
+            const steps = Math.round(distance / stepSize); // You can adjust stepSize as needed
+        
+            if (Math.abs(dx) > Math.abs(dy)) {
+                return {
+                    direction: dx > 0 ? 'Go right <span class="text-danger" style="font-size:25px; font-weight:bold;"><i class="bi bi-arrow-right"></i></span>' : 'Go left <span class="text-danger" style="font-size:25px; font-weight:bold;"><i class="bi bi-arrow-left"></i></span>',
+                    steps: steps
+                };
+            } else {
+                return {
+                    direction: dy > 0 ? 'Go down <span class="text-danger" style="font-size:25px; font-weight:bold;"><i class="bi bi-arrow-down"></i></span>' : 'Go up <span class="text-danger" style="font-size:25px; font-weight:bold;"><i class="bi bi-arrow-up"></i></span>',
+                    steps: steps
+                };
+            }
+        }
+        
+        function analyzePathAndShowDirections() {
+            let directions = [];
+            let currentDirection = null;
+            let totalSteps = 0;
+        
+            for (let path = 0; path < linesToDraw.length; path++) {
+                const result = getDirectionAndSteps(linesToDraw[path]);
+        
+                if (currentDirection === null) {
+                    // First direction encountered
+                    currentDirection = result.direction;
+                }
+        
+                if (result.direction === currentDirection) {
+                    // Accumulate steps for the same direction
+                    totalSteps += result.steps;
+                } else {
+                    // Change in direction, add accumulated steps to directions array
+                    directions.push(`<h3>${currentDirection} - <span class="text-primary" style="font-size:20px;">(${totalSteps} steps approx.)</span> </h3>`);
+                    
+                    // Reset accumulated steps for the new direction
+                    totalSteps = result.steps;
+                    currentDirection = result.direction;
+                }
+            }
+        
+            // Add the last accumulated direction
+            if (currentDirection !== null) {
+                directions.push(`<h3>${currentDirection} - <span class="text-primary" style="font-size:20px;">(${totalSteps} steps approx.)</span> </h3>`);
+            }
+        
+            if (!directions.length) {
+                $('#directionsBody').html('<h3> You Are at the Destination </h3>');
+            } else {
+                // Update modal content
+                $('#directionsBody').html(directions);
+            }
+        }
+                
+        // Set a reasonable step size for your calculations
+        const stepSize = 10;
+
+        let pathData = '';
+
+        // Function to create a <path> element and append it to the SVG
+        function createPathElement(pathData) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', pathData);
+            path.setAttribute('id', 'path');
+            path.style.fill = 'none';
+            path.style.stroke = 'black';
+            path.style.strokeWidth = '0.8';
+            document.querySelector('svg').appendChild(path);
+            return path;  // Return the path element
+        }
+
+        // Create path data from linesToDraw array
+        pathData = linesToDraw.reduce((acc, line, index) => {
+            const command = index === 0 ? 'M' : 'L';
+            return `${acc} ${command} ${line.x1} ${line.y1} L ${line.x2} ${line.y2}`;
+        }, '');
+
+        // Create and append the path element
+        const pathElement = createPathElement(pathData);
+        
+        pathElement.style.strokeDasharray = 2;
+        pathElement.style.strokeDashoffset = 2;
+
+        console.log(pathElement)
+
+        // Now you can use the pathElement variable for animations or other manipulations
+        anime({
+            targets: pathElement,
+            strokeDashoffset: [anime.setDashoffset, 0],
+            easing: 'linear',
+            duration: 12000,
+            loop: true
+        });
+
+
+
+        // code to scan qr code
+        
+        let scanner;
+        let video;
+        let closeButton;
+        let container;
+        
+        function startCamera() {
+            //disabling qr button 
+            document.getElementById('qrbtn').classList.add('disabled');
+            // Create a container for video and close button
+            container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.bottom = '0';
+            container.style.left = '0';
+            container.style.right = '0'; // Set right to 0 to ensure the div spans the entire width
+            container.style.width = 'fit-content';
+            container.style.margin = '0 auto'; // Horizontally center the div
+
+            // Access the camera and start scanning
+            const video = document.createElement('video');
+            video.style.width = '100%';
+            video.style.height = '50vh';
+            container.appendChild(video);
+
+            // Create and position close button
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '✖'; // Cross symbol
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px'; // Adjust top position as needed
+            closeButton.style.right = '10px'; // Adjust right position as needed
+            container.appendChild(closeButton);
+
+            // Append container to the body
+            document.body.appendChild(container);
+
+            // Event listener for close button
+            closeButton.addEventListener('click', closeCamera);
+
+            scanner = new Instascan.Scanner({ video: video });
+            scanner.addListener('scan', function(content) {
+                // This function is called when a QR code is 
+                if (typeof content != 'object'){
+                    showAlert("Oops! ", " Please scan the correct QR code.",10000);
+                }
+                // logic of new QR is here
+                const scannedLocation = JSON.parse(content);
+                console.log(scannedLocation);
+
+                //highlightLocation(scannedLocation.room,0.8,1,'red'); // You can use the scanned content here
+                
+                
+                var currentFloorInput = document.getElementById('current_floor');
+                var currentFloorValue = scannedLocation.floor;
+                currentFloorInput.value = currentFloorValue;
+
+                var fromFloorInput = document.getElementById('from-floor');
+                var fromFloorValue = scannedLocation.floor;
+                fromFloorInput.value = fromFloorValue;
+
+                var currentPlaceInput = document.getElementById('from-place');
+                var currentPlaceValue = scannedLocation.room;
+                currentPlaceInput.value = currentPlaceValue;       
+
+                if (scannedLocation.building){
+                    var currentBuildingInput = document.getElementById('currentBuilding');
+                    var currentBuildingValue = scannedLocation.building;
+                    currentBuildingInput.value = currentBuildingValue; 
+                }   
+        
+                console.log(currentFloorInput.value);
+                console.log(currentPlaceInput.value);
+                console.log(fromFloorInput.value);
+        
+                var qrform = document.getElementById('qrform');
+                qrform.submit();
+
+
+                scanner.stop();
+
+                // Hide the video element
+                video.style.display = 'none';
+                document.getElementById('qrbtn').classList.remove('disabled');
+
+            });
+
+            Instascan.Camera.getCameras().then(function (cameras) {
+                if (cameras.length == 1) {
+                    scanner.start(cameras[0]);
+                } else if (cameras.length > 1){
+                    scanner.start(cameras[1]);
+                    video.style.transform = 'scaleX(1)';
+                }else {
+                    console.error('No cameras found.');
+                }
+            }).catch(function (e) {
+                console.error(e);
+            });
+        }
+
+        function closeCamera() {
+            document.getElementById('qrbtn').classList.remove('disabled');
+            if (scanner) {
+                scanner.stop();
+            }
+            if(container){
+                document.body.removeChild(container);
+            }
+        }
+
+
+
+        function highlightLocation(locationId, initialRadius, maxRadius, color) {
+            // Hide the previous highlighted circle
+            const previousHighlighted = document.querySelector('.highlighted');
+            if (previousHighlighted) {
+                previousHighlighted.style.display = 'none';
+                previousHighlighted.classList.remove('highlighted');
+            }
+
+            const location = document.getElementById(locationId);
+
+            if (location) {
+                location.style.display = 'inline';
+                location.setAttribute('stroke', color);
+                location.setAttribute('fill', color);
+                location.classList.add('highlighted');
+                let currentRadius = initialRadius;
+
+                // Function to update the radius at regular intervals
+                function updateRadius() {
+                    // Toggle between initialRadius and maxRadius
+                    currentRadius = currentRadius === initialRadius ? maxRadius : initialRadius;
+
+                    // Apply the new radius
+                    location.setAttribute('r', currentRadius);
+                }
+
+                // Use setInterval to call updateRadius at regular intervals
+                const intervalId = setInterval(updateRadius, 400); // Change the interval as needed (milliseconds)
+
+                // Stop the animation after a certain time (e.g., 5000 milliseconds or 5 seconds)
+                setTimeout(() => {
+                    clearInterval(intervalId);
+                    location.style.display = 'none'; // Hide the circle after the animation
+                }, 50000000);
+            }
+
+        }
+
+        function highlightLocationDes(locationId, initialRadius, maxRadius, color) {
+            
+            const location = document.getElementById(locationId);
+
+            if (location) {
+                location.style.display = 'inline';
+                location.setAttribute('stroke', color);
+                location.setAttribute('fill', color);
+                let currentRadius = initialRadius;
+
+                // Function to update the radius at regular intervals
+                function updateRadius() {
+                    // Toggle between initialRadius and maxRadius
+                    currentRadius = currentRadius === initialRadius ? maxRadius : initialRadius;
+
+                    // Apply the new radius
+                    location.setAttribute('r', currentRadius);
+                }
+
+                // Use setInterval to call updateRadius at regular intervals
+                const intervalId = setInterval(updateRadius, 400); // Change the interval as needed (milliseconds)
+
+                // Stop the animation after a certain time (e.g., 5000 milliseconds or 5 seconds)
+                setTimeout(() => {
+                    clearInterval(intervalId);
+                    location.style.display = 'none'; // Hide the circle after the animation
+                }, 50000000);
+            }
+
+        }
+
+        //handle zooming SVG
+        let isZoomedIn = 500;
+        document.getElementById('zoom-in-btn').addEventListener('click', function(event) {
+            const svg = document.getElementById('svg-image');
+            let width = parseFloat(svg.getAttribute('width'))
+            // Increase or decrease the width of the SVG based on the direction of scroll (zoom in/out)
+            
+            if (width != isZoomedIn) {
+            let newWidth = width + 20;
+            svg.setAttribute('width',`${newWidth}%`)
+            }
+        });
+        let isZoomedOut = 100;
+        document.getElementById('zoom-out-btn').addEventListener('click', function(event) {
+            const svg = document.getElementById('svg-image');
+            let width = parseFloat(svg.getAttribute('width'))
+            // Increase or decrease the width of the SVG based on the direction of scroll (zoom in/out)
+            
+            if (width != isZoomedOut) {
+            let newWidth = width - 20;
+            svg.setAttribute('width',`${newWidth}%`)
+            }
+        });
+
+    </script>
+{% endblock  %}
+
