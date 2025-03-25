@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Indoor Navigation System - Lokmanya Tilak College of Engineering
 
 An indoor navigation system built for **Lokmanya Tilak College of Engineering** that helps users navigate the campus with ease, from the main gate to any destination within the college building and surrounding areas. The project utilizes floor-specific navigation maps, helping users find their desired locations efficiently using real-time directions.
@@ -117,3 +118,7 @@ python manage.py runserver
 Visit http://localhost:8000 in your browser to view the app.
 ```
 Feel free to fork the repository and submit issues or pull requests for bug fixes, feature requests, or enhancements. Contributions are welcome!
+=======
+# Indoor-Navigation-LTCE
+Indoor Navigation Project for LTCE
+>>>>>>> origin/main
